@@ -28,7 +28,7 @@ class ProductRepository {
     final db = await _getDatabase();
     final List<Map<String, dynamic>> maps = await db.query(
       productTable,
-      where: 'barcode = ?',
+      where: 'BarcodeNo = ?',
       whereArgs: [barcode],
       limit: 1,
     );
@@ -52,7 +52,7 @@ class ProductRepository {
     await db.update(
       productTable,
       product.toMap(),
-      where: 'barcode = ?',
+      where: 'BarcodeNo = ?',
       whereArgs: [product.barcode],
     );
   }
@@ -61,7 +61,7 @@ class ProductRepository {
     final db = await _getDatabase();
     await db.delete(
       productTable,
-      where: 'barcode = ?',
+      where: 'BarcodeNo = ?',
       whereArgs: [barcode],
     );
   }

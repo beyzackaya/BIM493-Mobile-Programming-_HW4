@@ -172,15 +172,19 @@ class _ProductFormDialogState extends State<ProductFormDialog> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.initialProduct != null;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final dialogWidth = screenWidth > 600 ? 500.0 : screenWidth * 0.9;
 
     return AlertDialog(
       title: Text(isEditing ? 'Ürünü Düzenle' : 'Ürün Ekle'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+      content: SizedBox(
+        width: dialogWidth,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               TextFormField(
                 controller: _barcodeController,
                 decoration: const InputDecoration(
@@ -230,55 +234,110 @@ class _ProductFormDialogState extends State<ProductFormDialog> {
                 },
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _unitPriceController,
-                      decoration: const InputDecoration(
-                        labelText: 'Birim Fiyat',
-                        border: OutlineInputBorder(),
-                        suffixText: '₺',
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final useColumn = constraints.maxWidth < 400;
+                  
+                  if (useColumn) {
+                    return Column(
+                      children: [
+                        TextFormField(
+                          controller: _unitPriceController,
+                          decoration: const InputDecoration(
+                            labelText: 'Birim Fiyat',
+                            border: OutlineInputBorder(),
+                            suffixText: '₺',
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Birim fiyat zorunludur.';
+                            }
+                            final normalized = value.replaceAll(',', '.');
+                            final parsed = double.tryParse(normalized);
+                            if (parsed == null || parsed <= 0) {
+                              return 'Geçerli bir pozitif değer girin.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: _taxRateController,
+                          decoration: const InputDecoration(
+                            labelText: 'Vergi Oranı (%)',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Vergi oranı zorunludur.';
+                            }
+                            final parsed = int.tryParse(value);
+                            if (parsed == null || parsed < 0) {
+                              return 'Geçerli bir oran girin.';
+                            }
+                            if (parsed > 100) {
+                              return 'Vergi oranı 100\'den büyük olamaz.';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    );
+                  }
+                  
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _unitPriceController,
+                          decoration: const InputDecoration(
+                            labelText: 'Birim Fiyat',
+                            border: OutlineInputBorder(),
+                            suffixText: '₺',
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Birim fiyat zorunludur.';
+                            }
+                            final normalized = value.replaceAll(',', '.');
+                            final parsed = double.tryParse(normalized);
+                            if (parsed == null || parsed <= 0) {
+                              return 'Geçerli bir pozitif değer girin.';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Birim fiyat zorunludur.';
-                        }
-                        final normalized = value.replaceAll(',', '.');
-                        final parsed = double.tryParse(normalized);
-                        if (parsed == null || parsed <= 0) {
-                          return 'Geçerli bir pozitif değer girin.';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _taxRateController,
-                      decoration: const InputDecoration(
-                        labelText: 'Vergi Oranı (%)',
-                        border: OutlineInputBorder(),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _taxRateController,
+                          decoration: const InputDecoration(
+                            labelText: 'Vergi Oranı (%)',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Vergi oranı zorunludur.';
+                            }
+                            final parsed = int.tryParse(value);
+                            if (parsed == null || parsed < 0) {
+                              return 'Geçerli bir oran girin.';
+                            }
+                            if (parsed > 100) {
+                              return 'Vergi oranı 100\'den büyük olamaz.';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Vergi oranı zorunludur.';
-                        }
-                        final parsed = int.tryParse(value);
-                        if (parsed == null || parsed < 0) {
-                          return 'Geçerli bir oran girin.';
-                        }
-                        if (parsed > 100) {
-                          return 'Vergi oranı 100\'den büyük olamaz.';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -318,6 +377,7 @@ class _ProductFormDialogState extends State<ProductFormDialog> {
               ],
             ],
           ),
+        ),
         ),
       ),
       actions: [

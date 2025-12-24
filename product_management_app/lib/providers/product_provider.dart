@@ -14,8 +14,16 @@ class ProductProvider extends ChangeNotifier {
   Product? _selectedProduct;
   bool _isLoading = false;
   String? _errorMessage;
+  String? _searchFilter;
 
-  List<Product> get products => List.unmodifiable(_products);
+  List<Product> get products {
+    if (_searchFilter != null && _searchFilter!.isNotEmpty) {
+      return List.unmodifiable(
+        _products.where((p) => p.barcode == _searchFilter).toList(),
+      );
+    }
+    return List.unmodifiable(_products);
+  }
   Product? get selectedProduct => _selectedProduct;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -42,6 +50,7 @@ class ProductProvider extends ChangeNotifier {
     try {
       final product = await _repository.getProductByBarcode(barcode);
       _selectedProduct = product;
+      _searchFilter = barcode;
       _errorMessage = null;
       return product;
     } catch (e) {
@@ -119,6 +128,12 @@ class ProductProvider extends ChangeNotifier {
   }
 
   void clearSelection() {
+    _selectedProduct = null;
+    notifyListeners();
+  }
+
+  void clearFilter() {
+    _searchFilter = null;
     _selectedProduct = null;
     notifyListeners();
   }

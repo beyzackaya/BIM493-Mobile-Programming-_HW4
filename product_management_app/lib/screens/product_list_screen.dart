@@ -132,12 +132,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ürün Yönetimi'),
       ),
       floatingActionButton: Consumer<ProductProvider>(
         builder: (context, provider, child) {
+          if (isSmallScreen) {
+            return FloatingActionButton(
+              onPressed: () => _openProductForm(provider: provider),
+              child: const Icon(Icons.add),
+            );
+          }
           return FloatingActionButton.extended(
             onPressed: () => _openProductForm(provider: provider),
             icon: const Icon(Icons.add),
@@ -146,7 +154,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         },
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isSmallScreen ? 8 : 16),
         child: Consumer<ProductProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.products.isEmpty) {
@@ -159,28 +167,87 @@ class _ProductListScreenState extends State<ProductListScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _barcodeController,
-                        decoration: const InputDecoration(
-                          labelText: 'Barkod Numarası',
-                          border: OutlineInputBorder(),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth < 500) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextField(
+                            controller: _barcodeController,
+                            decoration: const InputDecoration(
+                              labelText: 'Barkod Numarası',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: FilledButton.icon(
+                                  onPressed: provider.isLoading
+                                      ? null
+                                      : () => _onSearch(provider),
+                                  icon: const Icon(Icons.search),
+                                  label: const Text('Ara'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: provider.isLoading
+                                      ? null
+                                      : () {
+                                          _barcodeController.clear();
+                                          provider.clearFilter();
+                                        },
+                                  icon: const Icon(Icons.clear),
+                                  label: const Text('Temizle'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    }
+                    
+                    // Büyük ekranlar için yatay düzen
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _barcodeController,
+                            decoration: const InputDecoration(
+                              labelText: 'Barkod Numarası',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
                         ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    FilledButton.icon(
-                      onPressed: provider.isLoading
-                          ? null
-                          : () => _onSearch(provider),
-                      icon: const Icon(Icons.search),
-                      label: const Text('Ara'),
-                    ),
-                  ],
+                        const SizedBox(width: 12),
+                        FilledButton.icon(
+                          onPressed: provider.isLoading
+                              ? null
+                              : () => _onSearch(provider),
+                          icon: const Icon(Icons.search),
+                          label: const Text('Ara'),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: provider.isLoading
+                              ? null
+                              : () {
+                                  _barcodeController.clear();
+                                  provider.clearFilter();
+                                },
+                          icon: const Icon(Icons.clear),
+                          label: const Text('Temizle'),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 if (provider.errorMessage != null) ...[
                   const SizedBox(height: 12),
@@ -225,11 +292,19 @@ class _ProductTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 600),
+        constraints: BoxConstraints(
+          minWidth: isSmallScreen 
+              ? MediaQuery.of(context).size.width 
+              : 600,
+        ),
         child: DataTable(
+          columnSpacing: isSmallScreen ? 12 : 56,
+          horizontalMargin: isSmallScreen ? 12 : 24,
           columns: const [
             DataColumn(label: Text('Barkod')),
             DataColumn(label: Text('Ürün Adı')),

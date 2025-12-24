@@ -39,25 +39,25 @@ class Product {
 
   Map<String, dynamic> toMap() {
     return {
-      'barcode': barcode,
-      'name': name,
-      'category': category,
-      'unit_price': unitPrice,
-      'tax_rate': taxRate,
-      'price': price,
-      'stock': stock,
+      'BarcodeNo': barcode,
+      'ProductName': name,
+      'Category': category,
+      'UnitPrice': unitPrice,
+      'TaxRate': taxRate,
+      'Price': price,
+      'StockInfo': stock,
     };
   }
 
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
-      barcode: map['barcode'] as String,
-      name: map['name'] as String,
-      category: map['category'] as String,
-      unitPrice: (map['unit_price'] as num).toDouble(),
-      taxRate: map['tax_rate'] as int,
-      price: (map['price'] as num).toDouble(),
-      stock: map['stock'] as int?,
+      barcode: map['BarcodeNo'] as String,
+      name: map['ProductName'] as String,
+      category: map['Category'] as String,
+      unitPrice: (map['UnitPrice'] as num).toDouble(),
+      taxRate: map['TaxRate'] as int,
+      price: (map['Price'] as num).toDouble(),
+      stock: map['StockInfo'] as int?,
     );
   }
 }

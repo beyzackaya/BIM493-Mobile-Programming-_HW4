@@ -2,7 +2,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 const _databaseName = 'products.db';
-const _databaseVersion = 1;
+const _databaseVersion = 2;
 const productTable = 'products';
 
 class ProductDatabaseProvider {
@@ -32,15 +32,32 @@ class ProductDatabaseProvider {
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE $productTable (
-            barcode TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            category TEXT NOT NULL,
-            unit_price REAL NOT NULL,
-            tax_rate INTEGER NOT NULL,
-            price REAL NOT NULL,
-            stock INTEGER
+            BarcodeNo TEXT PRIMARY KEY,
+            ProductName TEXT NOT NULL,
+            Category TEXT NOT NULL,
+            UnitPrice REAL NOT NULL,
+            TaxRate INTEGER NOT NULL,
+            Price REAL NOT NULL,
+            StockInfo INTEGER
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Eski tabloyu sil ve yenisini oluştur
+          await db.execute('DROP TABLE IF EXISTS $productTable');
+          await db.execute('''
+            CREATE TABLE $productTable (
+              BarcodeNo TEXT PRIMARY KEY,
+              ProductName TEXT NOT NULL,
+              Category TEXT NOT NULL,
+              UnitPrice REAL NOT NULL,
+              TaxRate INTEGER NOT NULL,
+              Price REAL NOT NULL,
+              StockInfo INTEGER
+            )
+          ''');
+        }
       },
     );
   }
